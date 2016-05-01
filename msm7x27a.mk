@@ -24,8 +24,8 @@ PRODUCT_AAPT_CONFIG := normal mdpi
 PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 ## CMAccount
-PRODUCT_PACKAGES += \
-    CMAccount
+#PRODUCT_PACKAGES += \
+#    CMAccount
 
 ## Video
 PRODUCT_PACKAGES += \
@@ -38,7 +38,16 @@ PRODUCT_PACKAGES += \
     copybit.msm7x27a \
     gralloc.msm7x27a \
     hwcomposer.msm7x27a \
-    libtilerenderer
+    memtrack.msm7x27a \
+    lights.msm7x27a \
+    libgenlock \
+    liboverlay \
+    libtilerenderer \
+    libqdMetaData
+
+## GPS
+PRODUCT_PACKAGES += \
+    gps.msm7x27a
 
 ## Misc.
 PRODUCT_PACKAGES += \
@@ -60,9 +69,7 @@ PRODUCT_PACKAGES += \
 
 ## Other HALs
 PRODUCT_PACKAGES += \
-    lights.msm7x27a \
     camera.msm7x27a \
-    gps.msm7x27a \
     power.msm7x27a \
     libhealthd.msm7x27a
 
@@ -215,7 +222,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp,adb \
-    ro.vold.umsdirtyratio=50 
+    ro.vold.umsdirtyratio=50
 
 PRODUCT_PROPERTY_OVERRIDES += \
     wifi.interface=wlan0 \
