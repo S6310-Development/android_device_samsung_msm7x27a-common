@@ -26,7 +26,7 @@
 
     <!-- Flag indicating whether we should enable the automatic brightness in Settings.
          config_hardware_automatic_brightness_available is not set, so we will use software implementation -->
-    <bool name="config_automatic_brightness_available">true</bool>
+    <bool name="config_automatic_brightness_available">false</bool>
     
     <!-- Array of light sensor LUX values to define our levels for auto backlight brightness support.
          The N entries of this array define N + 1 zones as follows:
@@ -142,9 +142,12 @@
         <item>7</item>
     </integer-array>
 
-   <!-- Display low battery warning when battery level dips to this value.
+    <!-- Display low battery warning when battery level dips to this value.
          Also, the battery stats are flushed to disk when we hit this level.  -->
-    <integer name="config_criticalBatteryWarningLevel">5</integer>
+    <integer name="config_criticalBatteryWarningLevel">10</integer>
+
+    <!-- Display low battery warning when battery level dips to this value -1 -->
+    <integer name="config_lowBatteryWarningLevel">20</integer>
 
    <!-- Timeout in MS for how long you have to long-press the back key to
          kill the foreground app. -->
@@ -188,7 +191,7 @@
     <string name="config_datause_iface">rmnet0</string>
 
     <!-- Fade off animation when turning off screen -->
-    <bool name="config_animateScreenLights">false</bool>
+    <bool name="config_animateScreenLights">true</bool>
 	
     <!-- Flag indicating whether the surface flinger has limited
          alpha compositing functionality in hardware.  If set, the window
@@ -197,7 +200,7 @@
     <bool name="config_sf_limitedAlpha">true</bool>
 	
 	<!--  Maximum number of supported users -->
-    <integer name="config_multiuserMaximumUsers">4</integer>
+    <integer name="config_multiuserMaximumUsers">2</integer>
 
     <!-- Whether UI for multi user should be shown -->
     <bool name="config_enableMultiUserUI">true</bool>
@@ -212,6 +215,7 @@
             16 - App switch
          For example, a device with Home, Back and Menu keys would set this
          config to 7. -->
+    <integer name="config_deviceHardwareKeys">7</integer>
 		 
 	<!-- Whether WiFi display is supported by this device.
          There are many prerequisites for this feature to work correctly.

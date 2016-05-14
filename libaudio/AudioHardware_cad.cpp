@@ -20,7 +20,7 @@
 #include <math.h>
 
 //#define LOG_NDEBUG 0
-#define LOG_TAG "AudioHardwareMSM76XXA"
+#define LOG_TAG "AudioHardwareMSM76XXA_CAD"
 #include <utils/Log.h>
 #include <utils/String8.h>
 #include <stdio.h>
@@ -43,6 +43,9 @@ extern "C" {
 }
 #endif
 //#include <media/AudioRecord.h>
+
+static int (*audcal_init)();
+static void *libaudcal;
 
 #define COMBO_DEVICE_SUPPORTED // Headset speaker combo device supported on this target
 #define DUALMIC_KEY "dualmic_enabled"
@@ -105,12 +108,12 @@ static int hac_enable = 0;
 /*SND Devices*/
 static uint32_t SND_DEVICE_CURRENT = -1;
 static uint32_t SND_DEVICE_HANDSET = 0x0;
-static uint32_t SND_DEVICE_HEADSET = 0x2;
-static uint32_t SND_DEVICE_FM_HEADSET = 0x2;
+static uint32_t SND_DEVICE_HEADSET = 0x3;
+static uint32_t SND_DEVICE_FM_HEADSET = 0x3;
 static uint32_t SND_DEVICE_NO_MIC_HEADSET = 0x8;
-static uint32_t SND_DEVICE_SPEAKER = 0x1;
-static uint32_t SND_DEVICE_HEADSET_AND_SPEAKER = 0xA;
-static uint32_t SND_DEVICE_STEREO_HEADSET_AND_SPEAKER = 0xA;
+static uint32_t SND_DEVICE_SPEAKER = 0x6;
+static uint32_t SND_DEVICE_HEADSET_AND_SPEAKER = 0x31;
+static uint32_t SND_DEVICE_STEREO_HEADSET_AND_SPEAKER = 0x31;
 static uint32_t SND_DEVICE_TTY_HEADSET = 0x5;
 static uint32_t SND_DEVICE_TTY_VCO = 0x6;
 static uint32_t SND_DEVICE_TTY_HCO = 0x7;
@@ -168,35 +171,6 @@ AudioHardware::AudioHardware() :
 mDirectOutrefCnt(0)
 #endif /*QCOM_VOIP_ENABLED*/
 {
-  int (*set_acoustic_parameters)();
-  
-    acoustic = ::dlopen("/system/lib/libhtc_acoustic.so", RTLD_NOW);
-    if (acoustic == NULL ) {
-        ALOGE("Could not open libhtc_acoustic.so");
-    }
-
-    set_acoustic_parameters = (int (*)(void))::dlsym(acoustic, "set_acoustic_parameters");
-    if ((*set_acoustic_parameters) == 0 ) {
-        ALOGE("Could not open set_acoustic_parameters()");
-        return;
-    }
-
-    int rc = set_acoustic_parameters();
-    if (rc < 0) {
-        ALOGD("Could not set acoustic parameters to share memory: %d", rc);
-    }
-
-    char value[PROPERTY_VALUE_MAX];
-    /* Check the system property for enable or not the ALT function */
-    property_get("htc.audio.alt.enable", value, "0");
-    alt_enable = atoi(value);
-    ALOGV("Enable ALT function: %d", alt_enable);
-
-    /* Check the system property for enable or not the HAC function */
-    property_get("htc.audio.hac.enable", value, "0");
-    hac_enable = atoi(value);
-    ALOGV("Enable HAC function: %d", hac_enable);
-
     m7xsnddriverfd = open("/dev/msm_cad", O_RDWR);
     if (m7xsnddriverfd >= 0) {
         int rc = ioctl(m7xsnddriverfd, CAD_GET_NUM_ENDPOINTS, &mNumCadEndpoints);

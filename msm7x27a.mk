@@ -23,10 +23,6 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 PRODUCT_AAPT_CONFIG := normal mdpi
 PRODUCT_AAPT_PREF_CONFIG := mdpi
 
-## CMAccount
-#PRODUCT_PACKAGES += \
-#    CMAccount
-
 ## Video
 PRODUCT_PACKAGES += \
     libstagefrighthw \
@@ -61,7 +57,6 @@ PRODUCT_PACKAGES += \
 ## Audio
 PRODUCT_PACKAGES += \
     audio.primary.msm7x27a \
-    audio_policy.msm7x27a \
     audio.a2dp.default \
     audio.usb.default \
     audio.r_submix.default \
@@ -197,6 +192,12 @@ PRODUCT_COPY_FILES += \
 ## Charger
 PRODUCT_PACKAGES += \
     charger_res_images 
+
+## WiFi
+PRODUCT_PACKAGES += \
+    libwpa_client \
+    hostapd \
+    wpa_supplicant
 
 ## Properties
 PRODUCT_PROPERTY_OVERRIDES += \

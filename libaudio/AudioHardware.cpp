@@ -167,35 +167,6 @@ mDirectOutrefCnt(0)
            audpp_filter_inited = true;
    }
 
-  int (*set_acoustic_parameters)();
-  
-    acoustic = ::dlopen("/system/lib/libhtc_acoustic.so", RTLD_NOW);
-    if (acoustic == NULL ) {
-        ALOGE("Could not open libhtc_acoustic.so");
-    }
-
-    set_acoustic_parameters = (int (*)(void))::dlsym(acoustic, "set_acoustic_parameters");
-    if ((*set_acoustic_parameters) == 0 ) {
-        ALOGE("Could not open set_acoustic_parameters()");
-        return;
-    }
-
-    int rc = set_acoustic_parameters();
-    if (rc < 0) {
-        ALOGD("Could not set acoustic parameters to share memory: %d", rc);
-    }
-
-    char value[PROPERTY_VALUE_MAX];
-    /* Check the system property for enable or not the ALT function */
-    property_get("htc.audio.alt.enable", value, "0");
-    alt_enable = atoi(value);
-    ALOGV("Enable ALT function: %d", alt_enable);
-
-    /* Check the system property for enable or not the HAC function */
-    property_get("htc.audio.hac.enable", value, "0");
-    hac_enable = atoi(value);
-    ALOGV("Enable HAC function: %d", hac_enable);
-
     m7xsnddriverfd = open("/dev/msm_snd", O_RDWR);
     if (m7xsnddriverfd >= 0) {
         int rc = ioctl(m7xsnddriverfd, SND_GET_NUM_ENDPOINTS, &mNumSndEndpoints);
