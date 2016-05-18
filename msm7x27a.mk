@@ -209,7 +209,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.dexopt-data-only=1 \
-    dalvik.vm.jit.codecachesize=1
+    dalvik.vm.heapgrowthlimit=52m \
+    dalvik.vm.heapsize=128m \
+    dalvik.vm.heaptargetutilization=0.25
 
 PRODUCT_PROPERTY_OVERRIDES += \
     com.qc.hardware=true \
@@ -220,8 +222,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.hwc.mdpcomp.enable=false
 
 PRODUCT_PROPERTY_OVERRIDES += \
+    mm.enable.smoothstreaming=true
+
+PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp,adb \
     ro.vold.umsdirtyratio=50
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.dex2oat-filter=balanced \
+    dalvik.vm.image-dex2oat-filter=speed
 
 PRODUCT_PROPERTY_OVERRIDES += \
     wifi.interface=wlan0 \
@@ -229,6 +238,20 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.webview.provider=classic
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.config.low_ram=true \
+    config.disable_atlas=true \
+    persist.sys.force_highendgfx=true \
+    ro.config.max_starting_bg=6 \
+    ro.sys.fw.bg_apps_limit=8
+
+# ART
+ADDITIONAL_DEFAULT_PROPERTIES += \
+    dalvik.vm.dex2oat-Xms=8m \
+    dalvik.vm.dex2oat-Xmx=96m \
+    dalvik.vm.image-dex2oat-Xms=48m \
+    dalvik.vm.image-dex2oat-Xmx=48m
 
 $(call inherit-product, build/target/product/full.mk)
 $(call inherit-product, device/common/gps/gps_eu_supl.mk)
