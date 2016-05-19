@@ -39,8 +39,6 @@ public class SamsungRIL extends RIL implements CommandsInterface {
 
         int gsmSignalStrength = response[0];
         int gsmBitErrorRate = response[1];
-        //int mWcdmaRscp = response[2]; // added by huawei
-        //int mWcdmaEcio = response[3]; // added by huawei
         int cdmaDbm = response[2];
         int cdmaEcio = response[3];
         int evdoDbm = response[4];
@@ -52,12 +50,10 @@ public class SamsungRIL extends RIL implements CommandsInterface {
         int lteRssnr = response[10];
         int lteCqi = response[11];
         boolean gsmFlag = true;
-        int mRat = 0; // added by huawei
+        int mRat = 0;
 
         Rlog.e(RILJ_LOG_TAG, "gsmSignalStrength:" + gsmSignalStrength);
         Rlog.e(RILJ_LOG_TAG, "gsmBitErrorRate:" + gsmBitErrorRate);
-        //Rlog.e(RILJ_LOG_TAG, "mWcdmaRscp:" + mWcdmaRscp);
-        //Rlog.e(RILJ_LOG_TAG, "mWcdmaEcio:" + mWcdmaEcio);
         Rlog.e(RILJ_LOG_TAG, "cdmaDbm:" + cdmaDbm);
         Rlog.e(RILJ_LOG_TAG, "cdmaEcio:" + cdmaEcio);
         Rlog.e(RILJ_LOG_TAG, "evdoDbm:" + evdoDbm);
