@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The CyanogenMod Project
+ * Copyright (C) 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,172 +16,63 @@
 
 package com.android.internal.telephony;
 
-import static com.android.internal.telephony.RILConstants.*;
-
-import android.content.Context;
-import android.os.AsyncResult;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
 import android.os.Parcel;
 import android.os.SystemProperties;
-import android.text.TextUtils;
-import android.telephony.CellInfo;
-import android.telephony.Rlog;
+import android.content.Context;
+
 import android.telephony.SignalStrength;
-
-import com.android.internal.telephony.uicc.IccCardApplicationStatus;
-import com.android.internal.telephony.uicc.IccCardStatus;
-import com.android.internal.telephony.dataconnection.DcFailCause;
-import com.android.internal.telephony.dataconnection.DataCallResponse;
-
-import java.util.ArrayList;
+import android.telephony.Rlog;
 
 public class SamsungRIL extends RIL implements CommandsInterface {
 
-    private static final int RIL_UNSOL_ENTER_LPM = 1523;
-    private static final int RIL_UNSOL_CDMA_3G_INDICATOR = 3009;
-    private static final int RIL_UNSOL_CDMA_ENHANCE_ROAMING_INDICATOR = 3012;
-    private static final int RIL_UNSOL_CDMA_NETWORK_BASE_PLUSCODE_DIAL = 3020;
-    private static final int RIL_UNSOL_RESPONSE_PHONE_MODE_CHANGE = 6002;
-    private static final int RIL_UNSOL_RESPONSE_VOICE_RADIO_TECH_CHANGED = 21004;
-    private static final int RIL_UNSOL_RESPONSE_IMS_NETWORK_STATE_CHANGED = 21005;
-    private static final int RIL_UNSOL_RESPONSE_DATA_NETWORK_STATE_CHANGED = 21007;
-
-    public SamsungRIL(Context context, int networkMode, int cdmaSubscription) {
-        super(context, networkMode, cdmaSubscription, null);
-        mQANElements = 5;
-    }
-
-    public SamsungRIL(Context context, int networkMode, int cdmaSubscription,
-            Integer instanceId) {
+    public SamsungRIL(Context context, int networkMode, int cdmaSubscription, Integer instanceId) {
         super(context, networkMode, cdmaSubscription, instanceId);
-        mQANElements = 5;
     }
 
     @Override
     protected Object
     responseSignalStrength(Parcel p) {
-        int numInts = 12;
-        int response[];
-
-        response = new int[numInts];
-        for (int i = 0 ; i < numInts ; i++) {
-            if (i > 6 && i < 12) {
-		//We dont have LTE so mark these as INVALID
-                response[i] = SignalStrength.INVALID;
-            } else {
-                response[i] = p.readInt();
-            }
+        int[] response = new int[14];
+        for (int i = 0 ; i < 14 ; i++) {
+            response[i] = p.readInt();
         }
 
-        return new SignalStrength(response[0], response[1], response[2], response[3], response[4], response[5],
-                response[6], response[7],response[8], response[9], response[10], response[11], true);
-    }
+        int gsmSignalStrength = response[0];
+        int gsmBitErrorRate = response[1];
+        //int mWcdmaRscp = response[2]; // added by huawei
+        //int mWcdmaEcio = response[3]; // added by huawei
+        int cdmaDbm = response[2];
+        int cdmaEcio = response[3];
+        int evdoDbm = response[4];
+        int evdoEcio = response[5];
+        int evdoSnr = response[6];
+        int lteSignalStrength = response[7];
+        int lteRsrp = response[8];
+        int lteRsrq = response[9];
+        int lteRssnr = response[10];
+        int lteCqi = response[11];
+        boolean gsmFlag = true;
+        int mRat = 0; // added by huawei
 
-    @Override
-    protected Object
-    responseIccCardStatus(Parcel p) {
-        // force CDMA + LTE network mode
-        boolean forceCdmaLte = needsOldRilFeature("forceCdmaLteNetworkType");
+        Rlog.e(RILJ_LOG_TAG, "gsmSignalStrength:" + gsmSignalStrength);
+        Rlog.e(RILJ_LOG_TAG, "gsmBitErrorRate:" + gsmBitErrorRate);
+        //Rlog.e(RILJ_LOG_TAG, "mWcdmaRscp:" + mWcdmaRscp);
+        //Rlog.e(RILJ_LOG_TAG, "mWcdmaEcio:" + mWcdmaEcio);
+        Rlog.e(RILJ_LOG_TAG, "cdmaDbm:" + cdmaDbm);
+        Rlog.e(RILJ_LOG_TAG, "cdmaEcio:" + cdmaEcio);
+        Rlog.e(RILJ_LOG_TAG, "evdoDbm:" + evdoDbm);
+        Rlog.e(RILJ_LOG_TAG, "evdoEcio:" + evdoEcio);
+        Rlog.e(RILJ_LOG_TAG, "evdoSnr:" + evdoSnr);
+        Rlog.e(RILJ_LOG_TAG, "lteRsrp:" + lteRsrp);
+        Rlog.e(RILJ_LOG_TAG, "lteRsrq:" + lteRsrq);
+        Rlog.e(RILJ_LOG_TAG, "lteRssnr:" + lteRssnr);
+        Rlog.e(RILJ_LOG_TAG, "lteCqi:" + lteCqi);
+        Rlog.e(RILJ_LOG_TAG, "gsmFlag:" + gsmFlag);
 
-        if (forceCdmaLte) {
-            setPreferredNetworkType(NETWORK_MODE_LTE_CDMA_EVDO, null);
-        }
-
-        return super.responseIccCardStatus(p);
-    }
-
-    @Override
-    protected DataCallResponse getDataCallResponse(Parcel p, int version) {
-        DataCallResponse dataCall = new DataCallResponse();
-
-        dataCall.version = version;
-        dataCall.status = p.readInt();
-        dataCall.suggestedRetryTime = p.readInt();
-        dataCall.cid = p.readInt();
-        dataCall.active = p.readInt();
-        dataCall.type = p.readString();
-        dataCall.ifname = p.readString();
-        /* Check dataCall.active != 0 so address, dns, gateways are provided
-         * when switching LTE<->3G<->2G */
-        if ((dataCall.status == DcFailCause.NONE.getErrorCode()) &&
-                TextUtils.isEmpty(dataCall.ifname) && dataCall.active != 0) {
-            throw new RuntimeException("getDataCallResponse, no ifname");
-        }
-        String addresses = p.readString();
-        if (!TextUtils.isEmpty(addresses)) {
-            dataCall.addresses = addresses.split(" ");
-        }
-        String dnses = p.readString();
-        if (!TextUtils.isEmpty(dnses)) {
-            dataCall.dnses = dnses.split(" ");
-        }
-        String gateways = p.readString();
-        if (!TextUtils.isEmpty(gateways)) {
-            dataCall.gateways = gateways.split(" ");
-        }
-        return dataCall;
-    }
-
-    @Override
-    protected void
-    processUnsolicited (Parcel p) {
-        Object ret;
-        int dataPosition = p.dataPosition(); // save off position within the Parcel
-        int response = p.readInt();
-
-        switch(response) {
-            case RIL_UNSOL_ENTER_LPM: ret = responseVoid(p); break;
-            case RIL_UNSOL_CDMA_3G_INDICATOR:  ret = responseInts(p); break;
-            case RIL_UNSOL_CDMA_ENHANCE_ROAMING_INDICATOR:  ret = responseInts(p); break;
-            case RIL_UNSOL_CDMA_NETWORK_BASE_PLUSCODE_DIAL:  ret = responseStrings(p); break;
-            case RIL_UNSOL_RESPONSE_PHONE_MODE_CHANGE:  ret = responseInts(p); break;
-            case RIL_UNSOL_RESPONSE_VOICE_RADIO_TECH_CHANGED: ret = responseVoid(p); break;
-            case RIL_UNSOL_RESPONSE_IMS_NETWORK_STATE_CHANGED: ret = responseVoid(p); break;
-            case RIL_UNSOL_RESPONSE_DATA_NETWORK_STATE_CHANGED: ret = responseVoid(p); break;
-            case RIL_UNSOL_RIL_CONNECTED: ret = responseInts(p); break;
-
-            default:
-                // Rewind the Parcel
-                p.setDataPosition(dataPosition);
-
-                // Forward responses that we are not overriding to the super class
-                super.processUnsolicited(p);
-                return;
-        }
-
-        switch(response) {
-            case RIL_UNSOL_ENTER_LPM:
-            case RIL_UNSOL_CDMA_3G_INDICATOR:
-            case RIL_UNSOL_CDMA_ENHANCE_ROAMING_INDICATOR:
-            case RIL_UNSOL_CDMA_NETWORK_BASE_PLUSCODE_DIAL:
-            case RIL_UNSOL_RESPONSE_PHONE_MODE_CHANGE:
-            case RIL_UNSOL_RESPONSE_VOICE_RADIO_TECH_CHANGED:
-            case RIL_UNSOL_RESPONSE_IMS_NETWORK_STATE_CHANGED:
-            case RIL_UNSOL_RESPONSE_DATA_NETWORK_STATE_CHANGED:
-                if (RILJ_LOGD) unsljLogRet(response, ret);
-
-                if (mExitEmergencyCallbackModeRegistrants != null) {
-                    mExitEmergencyCallbackModeRegistrants.notifyRegistrants(
-                                        new AsyncResult (null, null, null));
-                }
-                break;
-            case RIL_UNSOL_RIL_CONNECTED: {
-                if (RILJ_LOGD) unsljLogRet(response, ret);
-
-                // Initial conditions
-                if (SystemProperties.get("ril.socket.reset").equals("1")) {
-                    setRadioPower(false, null);
-                }
-                // Trigger socket reset if RIL connect is called again
-                SystemProperties.set("ril.socket.reset", "1");
-                setPreferredNetworkType(mPreferredNetworkType, null);
-                setCdmaSubscriptionSource(mCdmaSubscription, null);
-                setCellInfoListRate(Integer.MAX_VALUE, null);
-                notifyRegistrantsRilConnectionChanged(((int[])ret)[0]);
-                break;
-            }
-        }
+        SignalStrength signalStrength = new SignalStrength(
+            gsmSignalStrength, gsmBitErrorRate, cdmaDbm, cdmaEcio, evdoDbm,
+            evdoEcio, evdoSnr, lteSignalStrength, lteRsrp, lteRsrq,
+            lteRssnr, lteCqi, gsmFlag);
+        return signalStrength;
     }
 }
