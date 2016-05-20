@@ -55,7 +55,7 @@ TARGET_ARCH_LOWMEM := true
 ARCH_ARM_HIGH_OPTIMIZATION := true
 TARGET_BOOTANIMATION_TEXTURE_CACHE := false
 
-MALLOC_IMPL := dlmalloc
+#MALLOC_IMPL := dlmalloc
 
 ## Memory
 TARGET_USES_ION := true
@@ -134,7 +134,7 @@ WIFI_DRIVER_MODULE_PATH := "/system/lib/modules/ath6kl_sdio.ko"
 WIFI_DRIVER_MODULE_ARG := "suspend_mode=3 wow_mode=2 ath6kl_p2p=1 recovery_enable=1"
 
 ## RIL
-#BOARD_USES_LEGACY_RIL := true
+BOARD_USES_LEGACY_RIL := true
 BOARD_MOBILEDATA_INTERFACE_NAME := "pdp0"
 BOARD_RIL_CLASS := ../../../device/samsung/msm7x27a-common/ril/
 
