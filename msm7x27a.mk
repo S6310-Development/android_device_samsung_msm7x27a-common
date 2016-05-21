@@ -81,7 +81,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     bluetooth-headers \
     hciconfig \
-    hciattach \
     btmon \
     btproxy \
     bluetoothd-snoop \
@@ -90,7 +89,6 @@ PRODUCT_PACKAGES += \
     l2ping \
     libsbc \
     avinfo \
-    bccmd \
     haltest \
     libdbus \
     audio.sco.default \
