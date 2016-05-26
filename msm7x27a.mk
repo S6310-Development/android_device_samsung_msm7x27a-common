@@ -25,9 +25,11 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 ## Video
 PRODUCT_PACKAGES += \
-    libstagefrighthw \
     libmm-omxcore \
-    libOmxCore
+    libOmxCore \
+    libstagefrighthw \
+    libdashplayer \
+    qcmediaplayer
 
 ## Graphics
 PRODUCT_PACKAGES += \
@@ -61,7 +63,6 @@ PRODUCT_PACKAGES += \
     audio.usb.default \
     audio.r_submix.default \
     libaudioutils \
-    libdashplayer \
     libtinyalsa \
     libaudio-resampler
 
@@ -232,6 +233,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.dex2oat-filter=balanced \
+    dalvik.vm.dex2oat-flags="--no-watch-dog" \
     dalvik.vm.image-dex2oat-filter=speed
 
 PRODUCT_PROPERTY_OVERRIDES += \
