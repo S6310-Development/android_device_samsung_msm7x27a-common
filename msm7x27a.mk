@@ -86,6 +86,7 @@ PRODUCT_PACKAGES += \
     btproxy \
     bluetoothd-snoop \
     btmgmt \
+    hciattach \
     hcitool \
     l2ping \
     libsbc \
