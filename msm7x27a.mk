@@ -31,20 +31,16 @@ PRODUCT_PACKAGES += \
     libdashplayer \
     qcmediaplayer
 
+PRODUCT_BOOT_JARS += \
+    qcmediaplayer
+
 ## Graphics
 PRODUCT_PACKAGES += \
-    libgenlock \
     copybit.msm7x27a \
     gralloc.msm7x27a \
     libqdMetaData \
     memtrack.msm7x27a \
-    hwcomposer.msm7x27a \
-    memtrack.msm7x27a \
-    lights.msm7x27a \
-    libgenlock \
-    liboverlay \
-    libtilerenderer \
-    libqdMetaData
+    lights.msm7x27a
 
 ## GPS
 PRODUCT_PACKAGES += \
@@ -104,6 +100,8 @@ PRODUCT_PACKAGES += \
 # Product specific Packages
 PRODUCT_PACKAGES += \
     SamsungServiceMode
+
+PRODUCT_PACKAGES += Torch
 
 ## Recovery
 PRODUCT_COPY_FILES += \
@@ -195,6 +193,7 @@ PRODUCT_COPY_FILES += \
 
 ## Charger
 PRODUCT_PACKAGES += \
+    charger \
     charger_res_images 
 
 ## WiFi
@@ -240,6 +239,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     wifi.interface=wlan0 \
     wifi.supplicant_scan_interval=60
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    debug.sf.hw=1
 
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.webview.provider=classic
