@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 The Android Open Source Project
- * Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012, The Linux Foundation. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "qcom_audio_policy_hal"
+#define LOG_TAG "audio.primary.msm7627a"
 //#define LOG_NDEBUG 0
 
 #include <stdint.h>
@@ -52,74 +52,6 @@ struct qcom_stream_in {
 
     AudioStreamIn *qcom_in;
 };
-
-enum {
-    HAL_API_REV_1_0,
-    HAL_API_REV_2_0,
-    HAL_API_REV_NUM
-} hal_api_rev;
-static uint32_t audio_device_conv_table[][HAL_API_REV_NUM] =
-{
-    /* output devices */
-    { AudioSystem::DEVICE_OUT_EARPIECE, AUDIO_DEVICE_OUT_EARPIECE },
-    { AudioSystem::DEVICE_OUT_SPEAKER, AUDIO_DEVICE_OUT_SPEAKER },
-    { AudioSystem::DEVICE_OUT_WIRED_HEADSET, AUDIO_DEVICE_OUT_WIRED_HEADSET },
-    { AudioSystem::DEVICE_OUT_WIRED_HEADPHONE, AUDIO_DEVICE_OUT_WIRED_HEADPHONE },
-    { AudioSystem::DEVICE_OUT_BLUETOOTH_SCO, AUDIO_DEVICE_OUT_BLUETOOTH_SCO },
-    { AudioSystem::DEVICE_OUT_BLUETOOTH_SCO_HEADSET, AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET },
-    { AudioSystem::DEVICE_OUT_BLUETOOTH_SCO_CARKIT, AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT },
-    { AudioSystem::DEVICE_OUT_BLUETOOTH_A2DP, AUDIO_DEVICE_OUT_BLUETOOTH_A2DP },
-    { AudioSystem::DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES, AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES },
-    { AudioSystem::DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER, AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER },
-    { AudioSystem::DEVICE_OUT_AUX_DIGITAL, AUDIO_DEVICE_OUT_AUX_DIGITAL },
-    { AudioSystem::DEVICE_OUT_ANLG_DOCK_HEADSET, AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET },
-    { AudioSystem::DEVICE_OUT_DGTL_DOCK_HEADSET, AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET },
-#ifdef QCOM_FM_ENABLED
-    { AudioSystem::DEVICE_OUT_FM, AUDIO_DEVICE_OUT_FM },
-    { AudioSystem::DEVICE_OUT_FM_TX, AUDIO_DEVICE_OUT_FM_TX },
-#endif
-    { AudioSystem::DEVICE_OUT_DEFAULT, AUDIO_DEVICE_OUT_DEFAULT },
-    /* input devices */
-    { AudioSystem::DEVICE_IN_COMMUNICATION, AUDIO_DEVICE_IN_COMMUNICATION },
-    { AudioSystem::DEVICE_IN_AMBIENT, AUDIO_DEVICE_IN_AMBIENT },
-    { AudioSystem::DEVICE_IN_BUILTIN_MIC, AUDIO_DEVICE_IN_BUILTIN_MIC },
-    { AudioSystem::DEVICE_IN_BLUETOOTH_SCO_HEADSET, AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET },
-    { AudioSystem::DEVICE_IN_WIRED_HEADSET, AUDIO_DEVICE_IN_WIRED_HEADSET },
-    { AudioSystem::DEVICE_IN_AUX_DIGITAL, AUDIO_DEVICE_IN_AUX_DIGITAL },
-    { AudioSystem::DEVICE_IN_VOICE_CALL, AUDIO_DEVICE_IN_VOICE_CALL },
-    { AudioSystem::DEVICE_IN_BACK_MIC, AUDIO_DEVICE_IN_BACK_MIC },
-#ifdef QCOM_FM_ENABLED
-    { AudioSystem::DEVICE_IN_FM_RX, AUDIO_DEVICE_IN_FM_RX },
-    { AudioSystem::DEVICE_IN_FM_RX_A2DP, AUDIO_DEVICE_IN_FM_RX_A2DP },
-#endif
-    { AudioSystem::DEVICE_IN_DEFAULT, AUDIO_DEVICE_IN_DEFAULT },
-};
-
-static uint32_t convert_audio_device(uint32_t from_device, int from_rev, int to_rev)
-{
-    const uint32_t k_num_devices = sizeof(audio_device_conv_table)/sizeof(uint32_t)/HAL_API_REV_NUM;
-    uint32_t to_device = AUDIO_DEVICE_NONE;
-    uint32_t in_bit = 0;
-
-    if (from_rev != HAL_API_REV_1_0) {
-        in_bit = from_device & AUDIO_DEVICE_BIT_IN;
-        from_device &= ~AUDIO_DEVICE_BIT_IN;
-    }
-
-    while (from_device) {
-        uint32_t i = 31 - __builtin_clz(from_device);
-        uint32_t cur_device = (1 << i) | in_bit;
-
-        for (i = 0; i < k_num_devices; i++) {
-            if (audio_device_conv_table[i][from_rev] == cur_device) {
-                to_device |= audio_device_conv_table[i][to_rev];
-                break;
-            }
-        }
-        from_device &= ~cur_device;
-    }
-    return to_device;
-}
 
 /** audio_stream_out implementation **/
 static uint32_t out_get_sample_rate(const struct audio_stream *stream)
@@ -193,7 +125,6 @@ static int out_set_parameters(struct audio_stream *stream, const char *kvpairs)
     AudioParameter parms = AudioParameter(String8(kvpairs));
 
     if (parms.getInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val) == NO_ERROR) {
-        val = convert_audio_device(val, HAL_API_REV_2_0, HAL_API_REV_1_0);
         parms.remove(String8(AUDIO_PARAMETER_STREAM_ROUTING));
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
@@ -210,7 +141,6 @@ static char * out_get_parameters(const struct audio_stream *stream, const char *
     s8 = out->qcom_out->getParameters(String8(keys));
     AudioParameter parms = AudioParameter(s8);
     if (parms.getInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val) == NO_ERROR) {
-        val = convert_audio_device(val, HAL_API_REV_1_0, HAL_API_REV_2_0);
         parms.remove(String8(AUDIO_PARAMETER_STREAM_ROUTING));
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
@@ -257,14 +187,14 @@ static int out_set_observer(const struct audio_stream_out *stream,
     return out->qcom_out->setObserver(observer);
 }
 
-static int out_get_buffer_info(const struct audio_stream_out *stream,
-                                   buf_info ** buf)
+/*static int out_get_buffer_info(const struct audio_stream_out *stream,
+                                   //buf_info ** buf)
 {
     const struct qcom_stream_out *out =
         reinterpret_cast<const struct qcom_stream_out *>(stream);
     return out->qcom_out->getBufferInfo(buf);
 }
-
+*/
 static int out_is_buffer_available(const struct audio_stream_out *stream,
                                    int *isAvail)
 {
@@ -317,14 +247,6 @@ static int out_get_next_write_timestamp(const struct audio_stream_out *stream,
     const struct qcom_stream_out *out =
         reinterpret_cast<const struct qcom_stream_out *>(stream);
     return out->qcom_out->getNextWriteTimestamp(timestamp);
-}
-
-static int out_get_presentation_position(const struct audio_stream_out *stream,
-                                         uint64_t *frames, struct timespec *timestamp)
-{
-    const struct qcom_stream_out *out =
-        reinterpret_cast<const struct qcom_stream_out *>(stream);
-    return out->qcom_out->getPresentationPosition(frames, timestamp);
 }
 
 /** audio_stream_in implementation **/
@@ -398,7 +320,6 @@ static int in_set_parameters(struct audio_stream *stream, const char *kvpairs)
     String8 s8 = String8(kvpairs);
 
     if (parms.getInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val) == NO_ERROR) {
-        val = convert_audio_device(val, HAL_API_REV_2_0, HAL_API_REV_1_0);
         parms.remove(String8(AUDIO_PARAMETER_STREAM_ROUTING));
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
@@ -416,7 +337,6 @@ static char * in_get_parameters(const struct audio_stream *stream,
     s8 = in->qcom_in->getParameters(String8(keys));
     AudioParameter parms = AudioParameter(s8);
     if (parms.getInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val) == NO_ERROR) {
-        val = convert_audio_device(val, HAL_API_REV_1_0, HAL_API_REV_2_0);
         parms.remove(String8(AUDIO_PARAMETER_STREAM_ROUTING));
         parms.addInt(String8(AUDIO_PARAMETER_STREAM_ROUTING), val);
         s8 = parms.toString();
@@ -471,69 +391,6 @@ static inline const struct qcom_audio_device * to_cladev(const struct audio_hw_d
     return reinterpret_cast<const struct qcom_audio_device *>(dev);
 }
 
-static uint32_t adev_get_supported_devices(const struct audio_hw_device *dev)
-{
-    /* XXX: The old AudioHardwareInterface interface is not smart enough to
-     * tell us this, so we'll lie and basically tell AF that we support the
-     * below input/output devices and cross our fingers. To do things properly,
-     * audio hardware interfaces that need advanced features (like this) should
-     * convert to the new HAL interface and not use this wrapper. */
-    return (/* OUT */
-            AUDIO_DEVICE_OUT_EARPIECE |
-            AUDIO_DEVICE_OUT_SPEAKER |
-            AUDIO_DEVICE_OUT_WIRED_HEADSET |
-            AUDIO_DEVICE_OUT_WIRED_HEADPHONE |
-            AUDIO_DEVICE_OUT_BLUETOOTH_SCO |
-            AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET |
-            AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT |
-            AUDIO_DEVICE_OUT_BLUETOOTH_A2DP |
-            AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES |
-            AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER |
-            AUDIO_DEVICE_OUT_AUX_DIGITAL |
-            AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET |
-            AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET |
-            AUDIO_DEVICE_OUT_USB_ACCESSORY |
-            AUDIO_DEVICE_OUT_USB_DEVICE |
-            AUDIO_DEVICE_OUT_REMOTE_SUBMIX |
-#ifdef QCOM_ANC_HEADSET_ENABLED
-            AUDIO_DEVICE_OUT_ANC_HEADSET |
-            AUDIO_DEVICE_OUT_ANC_HEADPHONE |
-#endif
-#ifdef QCOM_PROXY_DEVICE_ENABLED
-            AUDIO_DEVICE_OUT_PROXY |
-#endif
-#if defined(QCOM_FM_ENABLED)
-            AUDIO_DEVICE_OUT_FM |
-            AUDIO_DEVICE_OUT_FM_TX |
-#endif
-            AUDIO_DEVICE_OUT_DEFAULT |
-            /* IN */
-            AUDIO_DEVICE_IN_COMMUNICATION |
-            AUDIO_DEVICE_IN_AMBIENT |
-            AUDIO_DEVICE_IN_BUILTIN_MIC |
-            AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET |
-            AUDIO_DEVICE_IN_WIRED_HEADSET |
-            AUDIO_DEVICE_IN_AUX_DIGITAL |
-            AUDIO_DEVICE_IN_VOICE_CALL |
-            AUDIO_DEVICE_IN_BACK_MIC |
-            AUDIO_DEVICE_IN_REMOTE_SUBMIX |
-            AUDIO_DEVICE_IN_ANLG_DOCK_HEADSET |
-            AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET |
-            AUDIO_DEVICE_IN_USB_ACCESSORY |
-            AUDIO_DEVICE_IN_USB_DEVICE |
-#ifdef QCOM_ANC_HEADSET_ENABLED
-            AUDIO_DEVICE_IN_ANC_HEADSET |
-#endif
-#ifdef QCOM_PROXY_DEVICE_ENABLED
-            AUDIO_DEVICE_IN_PROXY |
-#endif
-#if defined(QCOM_FM_ENABLED)
-            AUDIO_DEVICE_IN_FM_RX |
-            AUDIO_DEVICE_IN_FM_RX_A2DP |
-#endif
-            AUDIO_DEVICE_IN_DEFAULT);
-}
-
 static int adev_init_check(const struct audio_hw_device *dev)
 {
     const struct qcom_audio_device *qadev = to_cladev(dev);
@@ -558,13 +415,6 @@ static int adev_get_master_volume(struct audio_hw_device *dev, float *volume) {
     struct qcom_audio_device *qadev = to_ladev(dev);
     return qadev->hwif->getMasterVolume(volume);
 }
-#ifdef QCOM_FM_ENABLED
-static int adev_set_fm_volume(struct audio_hw_device *dev, float volume)
-{
-    struct qcom_audio_device *qadev = to_ladev(dev);
-    return qadev->hwif->setFmVolume(volume);
-}
-#endif
 
 static int adev_set_mode(struct audio_hw_device *dev, audio_mode_t mode)
 {
@@ -614,8 +464,7 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
                                    audio_devices_t devices,
                                    audio_output_flags_t flags,
                                    struct audio_config *config,
-                                   struct audio_stream_out **stream_out,
-                                   const char *address __unused)
+                                   struct audio_stream_out **stream_out)
 {
     struct qcom_audio_device *qadev = to_ladev(dev);
     status_t status;
@@ -626,7 +475,6 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
     if (!out)
         return -ENOMEM;
 
-    devices = convert_audio_device(devices, HAL_API_REV_2_0, HAL_API_REV_1_0);
     status = static_cast<audio_output_flags_t> (flags);
 
     out->qcom_out = qadev->hwif->openOutputStream(devices, (int *) &config->format,
@@ -655,14 +503,13 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
     out->stream.write = out_write;
     out->stream.get_render_position = out_get_render_position;
     out->stream.get_next_write_timestamp = out_get_next_write_timestamp;
-    out->stream.get_presentation_position = out_get_presentation_position;
-    out->stream.start = out_start;
+    //out->stream.start = out_start;
     out->stream.pause = out_pause;
     out->stream.flush = out_flush;
-    out->stream.stop = out_stop;
-    out->stream.set_observer = out_set_observer;
-    out->stream.get_buffer_info = out_get_buffer_info;
-    out->stream.is_buffer_available = out_is_buffer_available;
+    //out->stream.stop = out_stop;
+    //out->stream.set_observer = out_set_observer;
+    //out->stream.get_buffer_info = out_get_buffer_info;
+    //out->stream.is_buffer_available = out_is_buffer_available;
 
     *stream_out = &out->stream;
     return 0;
@@ -688,10 +535,7 @@ static int adev_open_input_stream(struct audio_hw_device *dev,
                                   audio_io_handle_t handle,
                                   audio_devices_t devices,
                                   struct audio_config *config,
-                                  struct audio_stream_in **stream_in,
-                                  audio_input_flags_t flags __unused,
-                                  const char *address __unused,
-                                  audio_source_t source __unused)
+                                  struct audio_stream_in **stream_in)
 {
     struct qcom_audio_device *qadev = to_ladev(dev);
     status_t status;
@@ -702,7 +546,6 @@ static int adev_open_input_stream(struct audio_hw_device *dev,
     if (!in)
         return -ENOMEM;
 
-    devices = convert_audio_device(devices, HAL_API_REV_2_0, HAL_API_REV_1_0);
     in->qcom_in = qadev->hwif->openInputStream(devices, (int *)&config->format,
                                     &config->channel_mask,
                                     &config->sample_rate,
@@ -791,14 +634,10 @@ static int qcom_adev_open(const hw_module_t* module, const char* name,
     qadev->device.common.module = const_cast<hw_module_t*>(module);
     qadev->device.common.close = qcom_adev_close;
 
-    qadev->device.get_supported_devices = adev_get_supported_devices;
     qadev->device.init_check = adev_init_check;
     qadev->device.set_voice_volume = adev_set_voice_volume;
     qadev->device.set_master_volume = adev_set_master_volume;
     qadev->device.get_master_volume = adev_get_master_volume;
-#ifdef QCOM_FM_ENABLED
-    qadev->device.set_fm_volume = adev_set_fm_volume;
-#endif
     qadev->device.set_mode = adev_set_mode;
     qadev->device.set_mic_mute = adev_set_mic_mute;
     qadev->device.get_mic_mute = adev_get_mic_mute;
