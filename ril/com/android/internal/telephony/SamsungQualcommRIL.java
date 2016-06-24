@@ -71,13 +71,11 @@ public class SamsungQualcommRIL extends RIL implements CommandsInterface {
     private boolean driverCallU = needsOldRilFeature("newDriverCallU");
     private boolean dialCode = needsOldRilFeature("newDialCode");
     private boolean samsungEmergency = needsOldRilFeature("samsungEMSReq");
-
     public SamsungQualcommRIL(Context context, int networkMode, int cdmaSubscription) {
         this(context, networkMode, cdmaSubscription, null);
     }
 
-    public SamsungQualcommRIL(Context context, int networkMode,
-            int cdmaSubscription, Integer instanceId) {
+    public SamsungQualcommRIL(Context context, int networkMode, int cdmaSubscription, Integer instanceId) {
         super(context, networkMode, cdmaSubscription, instanceId);
         mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
         mQANElements = SystemProperties.getInt("ro.ril.telephony.mqanelements", 4);
@@ -434,7 +432,7 @@ public class SamsungQualcommRIL extends RIL implements CommandsInterface {
 
     public void setDataSubscription(Message result) {
         int simId = mInstanceId == null ? 0 : mInstanceId;
-        if (RILJ_LOGD) riljLog("Setting data subscription to " + simId);
+         if (RILJ_LOGD) riljLog("Setting data subscription to " + simId);
         invokeOemRilRequestBrcm((byte) 0, (byte)(0x30 + simId), result);
     }
 
