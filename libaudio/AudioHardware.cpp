@@ -251,6 +251,17 @@ status_t AudioHardware::initCheck()
     return mInit ? NO_ERROR : NO_INIT;
 }
 
+// default implementation calls its "without flags" counterpart
+AudioStreamOut* AudioHardware::openOutputStreamWithFlags(uint32_t devices,
+                                          audio_output_flags_t flags,
+                                          int *format,
+                                          uint32_t *channels,
+                                          uint32_t *sampleRate,
+                                          status_t *status)
+{
+    return openOutputStream(devices, format, channels, sampleRate, status);
+}
+
 AudioStreamOut* AudioHardware::openOutputStream(uint32_t devices, int *format, uint32_t *channels,
         uint32_t *sampleRate, status_t *status)
 {
@@ -489,6 +500,36 @@ status_t AudioHardware::setMode(int mode)
         clearCurDevice();
     }
     return status;
+}
+
+status_t AudioHardware::setMasterMute(bool muted) {
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
+}
+
+int AudioHardware::createAudioPatch(unsigned int num_sources,
+        const struct audio_port_config *sources,
+        unsigned int num_sinks,
+        const struct audio_port_config *sinks,
+        audio_patch_handle_t *handle) {
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
+}
+
+int AudioHardware::releaseAudioPatch(audio_patch_handle_t handle) {
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
+}
+
+int AudioHardware::getAudioPort(struct audio_port *port) {
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
+}
+
+int AudioHardware::setAudioPortConfig(
+        const struct audio_port_config *config) {
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
 }
 
 bool AudioHardware::checkOutputStandby()
@@ -2692,6 +2733,12 @@ status_t AudioHardware::AudioStreamOutMSM72xx::getRenderPosition(uint32_t *dspFr
     return INVALID_OPERATION;
 }
 
+status_t AudioHardware::AudioStreamOutMSM72xx::getPresentationPosition(uint64_t *frames, struct timespec *timestamp)
+{
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
+}
+
 #ifdef QCOM_VOIP_ENABLED
 AudioHardware::AudioStreamOutDirect::AudioStreamOutDirect() :
     mHardware(0), mFd(-1), mStartCount(0), mRetryCount(0), mStandby(true), mDevices(0),mChannels(AUDIO_CHANNEL_OUT_MONO),
@@ -2983,6 +3030,12 @@ status_t AudioHardware::AudioStreamOutDirect::getRenderPosition(uint32_t *dspFra
 #endif /*QCOM_VOIP_ENABLED*/
 
 // End AudioStreamOutDirect
+
+status_t AudioHardware::AudioStreamOutDirect::getPresentationPosition(uint64_t *frames, struct timespec *timestamp)
+{
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
+}
 
 //.----------------------------------------------------------------------------
 int AudioHardware::AudioStreamInMSM72xx::InstanceCount = 0;
@@ -4062,6 +4115,12 @@ void AudioHardware::AudioSessionOutLPA::reset()
 }
 
 status_t AudioHardware::AudioSessionOutLPA::getRenderPosition(uint32_t *dspFrames)
+{
+    //TODO: enable when supported by driver
+    return INVALID_OPERATION;
+}
+
+status_t AudioHardware::AudioSessionOutLPA::getPresentationPosition(uint64_t *frames, struct timespec *timestamp)
 {
     //TODO: enable when supported by driver
     return INVALID_OPERATION;
